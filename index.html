@@ -12,7 +12,6 @@ body{
     background:#f4f6f8;
 }
 
-/* Header */
 header{
     background:#0B5D3B;
     color:white;
@@ -25,12 +24,10 @@ header h1{
     font-size:26px;
 }
 
-/* Container */
 .container{
     padding:20px;
 }
 
-/* Card */
 .card{
     background:white;
     padding:15px;
@@ -39,7 +36,16 @@ header h1{
     box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Footer */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
 footer{
     text-align:center;
     padding:15px;
@@ -75,11 +81,49 @@ footer{
         </ul>
     </div>
 
+    <div class="card">
+        <h2>🔍 تلاش کریں</h2>
+        <input type="text" id="searchBox" placeholder="نام، مسجد یا شہر لکھیں..."
+        style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">
+    </div>
+
+    <div class="card">
+        <h2>📋 آئمہ کی فہرست</h2>
+
+        <table id="dataTable">
+            <tr style="background:#0B5D3B;color:white;">
+                <th>نام</th>
+                <th>مسجد</th>
+                <th>شہر</th>
+                <th>رابطہ</th>
+            </tr>
+
+            <tr>
+                <td>حافظ احمد</td>
+                <td>جامع مسجد</td>
+                <td>لاہور</td>
+                <td>03000000000</td>
+            </tr>
+        </table>
+    </div>
+
 </div>
 
 <footer>
     © 2026 رابطہ آئمہ مساجد پنجاب - تمام حقوق محفوظ ہیں
 </footer>
+
+<script>
+document.getElementById("searchBox").addEventListener("keyup", function() {
+    let input = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#dataTable tr");
+
+    for (let i = 1; i < rows.length; i++) {
+        let text = rows[i].innerText.toLowerCase();
+        rows[i].style.display = text.includes(input) ? "" : "none";
+    }
+});
+</script>
 
 </body>
 </html>
