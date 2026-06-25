@@ -1,57 +1,102 @@
 <!DOCTYPE html>
+
 <html lang="ur" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>رابطہ آئمہ مساجد پنجاب</title>
 
 <style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
 body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background:#f4f6f8;
+font-family:Arial,sans-serif;
+background:#f4f6f8;
+color:#333;
 }
 
 header{
-    background:#0B5D3B;
-    color:white;
-    padding:20px;
-    text-align:center;
+background:#0B5D3B;
+color:white;
+padding:25px;
+text-align:center;
 }
 
 header h1{
-    margin:0;
-    font-size:26px;
+font-size:28px;
+margin-bottom:10px;
+}
+
+header p{
+font-size:16px;
 }
 
 .container{
-    padding:20px;
+width:95%;
+max-width:1200px;
+margin:auto;
+padding:20px 0;
 }
 
 .card{
-    background:white;
-    padding:15px;
-    margin:10px 0;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.search-box{
+width:100%;
+padding:12px;
+font-size:16px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+.table-wrap{
+overflow-x:auto;
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
+width:100%;
+border-collapse:collapse;
+background:white;
 }
 
-th, td{
-    border:1px solid #ddd;
-    padding:10px;
+th{
+background:#0B5D3B;
+color:white;
+padding:12px;
+}
+
+td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+tr:nth-child(even){
+background:#f9f9f9;
+}
+
+.loading{
+text-align:center;
+padding:20px;
+font-size:18px;
 }
 
 footer{
-    text-align:center;
-    padding:15px;
-    background:#0B5D3B;
-    color:white;
-    margin-top:20px;
+background:#0B5D3B;
+color:white;
+text-align:center;
+padding:15px;
+margin-top:20px;
 }
 </style>
 
@@ -60,81 +105,128 @@ footer{
 <body>
 
 <header>
-    <h1>رابطہ آئمہ مساجد پنجاب</h1>
-    <p>تمام مساجد کے آئمہ کا ڈیٹا ایک جگہ</p>
+<h1>رابطہ آئمہ مساجد پنجاب</h1>
+<p>آئمہ مساجد کا آن لائن خودکار ڈیٹا بیس</p>
 </header>
 
 <div class="container">
 
-    <div class="card">
-        <h2>خوش آمدید</h2>
-        <p>یہ ویب سائٹ آئمہ کرام، مسجد کے نام، شہر اور رابطہ نمبرز کے لیے تیار کی جا رہی ہے۔</p>
-    </div>
+<div class="card">
+<h2>خوش آمدید</h2>
+<p>
+یہ ویب سائٹ پنجاب بھر کی مساجد کے آئمہ کرام کا ریکارڈ
+محفوظ کرنے اور تلاش کرنے کے لیے بنائی گئی ہے۔
+</p>
+</div>
 
-    <div class="card">
-        <h2>خصوصیات</h2>
-        <ul>
-            <li>امام مسجد کا نام</li>
-            <li>مسجد کا نام</li>
-            <li>شہر / ضلع</li>
-            <li>رابطہ نمبر</li>
-        </ul>
-    </div>
+<div class="card">
+<h2>🔍 تلاش کریں</h2>
+<input type="text" id="searchBox" class="search-box"
+placeholder="امام، مسجد، تحصیل یا ضلع لکھیں">
+</div>
 
-    <div class="card">
-        <h2>🔍 تلاش کریں</h2>
-        <input type="text" id="searchBox" placeholder="نام، مسجد یا شہر لکھیں..."
-        style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">
-    </div>
+<div class="card">
+<h2>📋 آئمہ کی فہرست</h2>
 
-    <div class="card">
-        <h2>📋 آئمہ کی فہرست</h2>
+<div id="loading" class="loading">
+ڈیٹا لوڈ ہو رہا ہے...
+</div>
 
-        <table id="dataTable">
-            <tr style="background:#0B5D3B;color:white;">
-                <th>نام</th>
-                <th>مسجد</th>
-                <th>شہر</th>
-                <th>رابطہ</th>
-            </tr>
+<div class="table-wrap">
+<table id="dataTable">
 
-            <tr>
-                <td>حافظ احمد</td>
-                <td>جامع مسجد</td>
-                <td>لاہور</td>
-                <td>03000000000</td>
-            </tr>
-            <tr>
-    <td>حافظ محمد عامر</td>
-    <td>جامع مسجد عثمانیہ</td>
-    <td>راولپنڈی</td>
-    <td>03123456789</td>
-            </tr>
-            <tr>
-    <td>قاری محمد یوسف</td>
-    <td>مدنی مسجد</td>
-    <td>فیصل آباد</td>
-    <td>03011111111</td>
-            </tr>
-        </table>
-    </div>
+<thead>
+<tr>
+<th>ID</th>
+<th>امام کا نام</th>
+<th>فون نمبر</th>
+<th>مسجد کا نام</th>
+<th>تحصیل</th>
+<th>ضلع</th>
+</tr>
+</thead>
+
+<tbody id="tableBody">
+</tbody>
+
+</table>
+</div>
+
+</div>
 
 </div>
 
 <footer>
-    © 2026 رابطہ آئمہ مساجد پنجاب - تمام حقوق محفوظ ہیں
+© 2026 رابطہ آئمہ مساجد پنجاب
 </footer>
 
 <script>
-document.getElementById("searchBox").addEventListener("keyup", function() {
-    let input = this.value.toLowerCase();
-    let rows = document.querySelectorAll("#dataTable tr");
 
-    for (let i = 1; i < rows.length; i++) {
-        let text = rows[i].innerText.toLowerCase();
-        rows[i].style.display = text.includes(input) ? "" : "none";
-    }
+const CSV_URL =
+"https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
+
+async function loadData(){
+
+try{
+
+const response = await fetch(CSV_URL);
+const text = await response.text();
+
+const rows = text.trim().split("\n");
+
+let html = "";
+
+for(let i=1;i<rows.length;i++){
+
+const cols = rows[i].split(",");
+
+html += `
+<tr>
+<td>${cols[0] || ""}</td>
+<td>${cols[1] || ""}</td>
+<td>${cols[2] || ""}</td>
+<td>${cols[3] || ""}</td>
+<td>${cols[4] || ""}</td>
+<td>${cols[5] || ""}</td>
+</tr>
+`;
+}
+
+document.getElementById("tableBody").innerHTML = html;
+document.getElementById("loading").style.display = "none";
+
+}
+catch(error){
+
+document.getElementById("loading").innerHTML =
+"ڈیٹا لوڈ نہیں ہو سکا";
+
+console.log(error);
+
+}
+}
+
+loadData();
+
+document
+.getElementById("searchBox")
+.addEventListener("keyup",function(){
+
+let filter=this.value.toLowerCase();
+
+let rows=document.querySelectorAll("#tableBody tr");
+
+rows.forEach(row=>{
+
+let txt=row.innerText.toLowerCase();
+
+row.style.display=
+txt.includes(filter) ? "" : "none";
+
 });
+
+});
+
 </script>
 
 </body>
