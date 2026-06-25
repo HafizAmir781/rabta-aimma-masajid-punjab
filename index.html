@@ -200,6 +200,7 @@ html += `
 }
 
 document.getElementById("tableBody").innerHTML = html;
+document.getElementById("recordCount").innerText = rows.length - 1;
 document.getElementById("loading").style.display = "none";
 
 }
