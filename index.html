@@ -216,24 +216,34 @@ console.log(error);
 
 loadData();
 
-document
-.getElementById("searchBox")
-.addEventListener("keyup",function(){
+function filterTable(){
 
-let filter=this.value.toLowerCase();
+let search=document.getElementById("searchBox").value.toLowerCase();
+let district=document.getElementById("districtFilter").value;
 
 let rows=document.querySelectorAll("#tableBody tr");
 
 rows.forEach(row=>{
 
-let txt=row.innerText.toLowerCase();
+let text=row.innerText.toLowerCase();
+let districtCell=row.cells[5].innerText;
 
-row.style.display=
-txt.includes(filter) ? "" : "none";
+let matchSearch=text.includes(search);
+let matchDistrict=(district==="" || districtCell===district);
+
+row.style.display=(matchSearch && matchDistrict) ? "" : "none";
 
 });
 
-});
+}
+
+document
+.getElementById("searchBox")
+.addEventListener("keyup",filterTable);
+
+document
+.getElementById("districtFilter")
+.addEventListener("change",filterTable);
 
 </script>
 
