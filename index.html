@@ -1,250 +1,137 @@
 <!DOCTYPE html>
-
 <html lang="ur" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>رابطہ آئمہ مساجد پنجاب</title>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
 body{
-font-family:Arial,sans-serif;
-background:#f4f6f8;
-color:#333;
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f4f6f8;
+    color:#222;
 }
 
 header{
-background:#0B5D3B;
-color:white;
-padding:25px;
-text-align:center;
+    background:#0B5D3B;
+    color:white;
+    padding:15px;
+    text-align:center;
 }
 
 header h1{
-font-size:28px;
-margin-bottom:10px;
-}
-
-header p{
-font-size:16px;
-}
-
-.container{
-width:95%;
-max-width:1200px;
-margin:auto;
-padding:20px 0;
-}
-
-.card{
-background:white;
-padding:15px;
-margin-bottom:15px;
-border-radius:10px;
-box-shadow:0 2px 10px rgba(0,0,0,.08);
+    margin:0;
+    font-size:22px;
 }
 
 .search-box{
-width:100%;
-padding:12px;
-font-size:16px;
-border:1px solid #ccc;
-border-radius:8px;
+    padding:15px;
+    text-align:center;
+    background:white;
 }
 
-.table-wrap{
-overflow-x:auto;
+.search-box input{
+    width:90%;
+    padding:10px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:8px;
 }
 
-table{
-width:100%;
-border-collapse:collapse;
-background:white;
+.container{
+    padding:10px;
 }
 
-th{
-background:#0B5D3B;
-color:white;
-padding:12px;
+.card{
+    background:white;
+    margin:10px 0;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-td{
-padding:10px;
-border:1px solid #ddd;
-text-align:center;
+.card h3{
+    margin:0 0 5px 0;
+    color:#0B5D3B;
 }
 
-tr:nth-child(even){
-background:#f9f9f9;
-}
-
-.loading{
-text-align:center;
-padding:20px;
-font-size:18px;
+.small{
+    font-size:14px;
+    color:#555;
+    line-height:1.6;
 }
 
 footer{
-background:#0B5D3B;
-color:white;
-text-align:center;
-padding:15px;
-margin-top:20px;
+    text-align:center;
+    padding:15px;
+    background:#0B5D3B;
+    color:white;
+    margin-top:20px;
 }
 </style>
-
 </head>
 
 <body>
 
-  <header>
-<h1>🕌 رابطہ آئمہ مساجد پنجاب</h1>
-<p>پنجاب بھر کی مساجد اور آئمہ کرام کا آن لائن خودکار ڈیٹا بیس</p>
+<header>
+    <h1>رابطہ آئمہ مساجد پنجاب</h1>
+    <p>مساجد اور آئمہ کا مستند ڈیٹا</p>
+</header>
 
-<div style="margin-top:15px;font-size:18px;">
-📊 کل ریکارڈز:
-<span id="recordCount">لوڈ ہو رہا ہے...</span>
+<div class="search-box">
+    <input type="text" id="search" onkeyup="searchData()" placeholder="امام، مسجد یا شہر تلاش کریں...">
 </div>
 
-  </header>
-  
+<div class="container" id="list">
 
-<div class="container">
+    <div class="card">
+        <h3>امام: حافظ احمد</h3>
+        <div class="small">
+            مسجد: جامع مسجد فاروقیہ<br>
+            شہر: ڈیرہ غازی خان<br>
+            رابطہ: 0300-0000000
+        </div>
+    </div>
 
-<div class="card">
-<h2>خوش آمدید</h2>
-<p>
-یہ ویب سائٹ پنجاب بھر کی مساجد کے آئمہ کرام کا ریکارڈ
-محفوظ کرنے اور تلاش کرنے کے لیے بنائی گئی ہے۔
-</p>
-</div>
+    <div class="card">
+        <h3>امام: قاری محمد علی</h3>
+        <div class="small">
+            مسجد: مسجد عثمانیہ<br>
+            شہر: ملتان<br>
+            رابطہ: 0311-1111111
+        </div>
+    </div>
 
-<div class="card">
-<h2>🔍 تلاش کریں</h2>
-<input type="text" id="searchBox" class="search-box"
-placeholder="امام، مسجد، تحصیل یا ضلع لکھیں">
-</div>
-
-<div class="card">
-<h2>📋 آئمہ کی فہرست</h2>
-
-<div id="loading" class="loading">
-ڈیٹا لوڈ ہو رہا ہے...
-</div>
-
-<div class="table-wrap">
-<table id="dataTable">
-
-<thead>
-<tr>
-<th>ID</th>
-<th>امام کا نام</th>
-<th>فون نمبر</th>
-<th>مسجد کا نام</th>
-<th>تحصیل</th>
-<th>ضلع</th>
-</tr>
-</thead>
-
-<tbody id="tableBody">
-</tbody>
-
-</table>
-</div>
-
-</div>
+    <div class="card">
+        <h3>امام: مفتی عبدالرحمن</h3>
+        <div class="small">
+            مسجد: جامع مسجد مدینہ<br>
+            شہر: لاہور<br>
+            رابطہ: 0322-2222222
+        </div>
+    </div>
 
 </div>
 
 <footer>
-© 2026 رابطہ آئمہ مساجد پنجاب
+    © 2026 رابطہ آئمہ مساجد پنجاب | تمام حقوق محفوظ ہیں
 </footer>
 
 <script>
+function searchData(){
+    let input = document.getElementById('search').value.toLowerCase();
+    let cards = document.getElementsByClassName('card');
 
-const CSV_URL =
-"https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
-
-async function loadData(){
-
-try{
-
-const response = await fetch(CSV_URL);
-const text = await response.text();
-
-const rows = text.trim().split("\n");
-
-let html = "";
-
-for(let i=1;i<rows.length;i++){
-
-const cols = rows[i].split(",");
-
-html += `
-<tr>
-<td>${cols[0] || ""}</td>
-<td>${cols[1] || ""}</td>
-<td>${cols[2] || ""}</td>
-<td>${cols[3] || ""}</td>
-<td>${cols[4] || ""}</td>
-<td>${cols[5] || ""}</td>
-</tr>
-`;
+    for(let i=0; i<cards.length; i++){
+        let text = cards[i].innerText.toLowerCase();
+        if(text.includes(input)){
+            cards[i].style.display = "";
+        } else {
+            cards[i].style.display = "none";
+        }
+    }
 }
-
-document.getElementById("tableBody").innerHTML = html;
-document.getElementById("recordCount").innerText = rows.length - 1;
-document.getElementById("loading").style.display = "none";
-
-}
-catch(error){
-
-document.getElementById("loading").innerHTML =
-"ڈیٹا لوڈ نہیں ہو سکا";
-
-console.log(error);
-
-}
-}
-
-loadData();
-
-function filterTable(){
-
-let search=document.getElementById("searchBox").value.toLowerCase();
-let district=document.getElementById("districtFilter").value;
-
-let rows=document.querySelectorAll("#tableBody tr");
-
-rows.forEach(row=>{
-
-let text=row.innerText.toLowerCase();
-let districtCell=row.cells[5].innerText;
-
-let matchSearch=text.includes(search);
-let matchDistrict=(district==="" || districtCell===district);
-
-row.style.display=(matchSearch && matchDistrict) ? "" : "none";
-
-});
-
-}
-
-document
-.getElementById("searchBox")
-.addEventListener("keyup",filterTable);
-
-document
-.getElementById("districtFilter")
-.addEventListener("change",filterTable);
-
 </script>
 
 </body>
