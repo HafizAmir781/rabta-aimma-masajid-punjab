@@ -6,132 +6,89 @@
 <title>رابطہ آئمہ مساجد پنجاب</title>
 
 <style>
-body{
-    font-family: Arial, sans-serif;
-    margin:0;
-    background:#f4f6f8;
-    color:#222;
-}
-
-header{
-    background:#0B5D3B;
-    color:white;
-    padding:15px;
-    text-align:center;
-}
-
-header h1{
-    margin:0;
-    font-size:22px;
-}
-
-.search-box{
-    padding:15px;
-    text-align:center;
-    background:white;
-}
-
-.search-box input{
-    width:90%;
-    padding:10px;
-    font-size:16px;
-    border:1px solid #ccc;
-    border-radius:8px;
-}
-
-.container{
-    padding:10px;
-}
-
-.card{
-    background:white;
-    margin:10px 0;
-    padding:15px;
-    border-radius:10px;
-    box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-
-.card h3{
-    margin:0 0 5px 0;
-    color:#0B5D3B;
-}
-
-.small{
-    font-size:14px;
-    color:#555;
-    line-height:1.6;
-}
-
-footer{
-    text-align:center;
-    padding:15px;
-    background:#0B5D3B;
-    color:white;
-    margin-top:20px;
-}
+body{font-family:Arial;margin:0;background:#f4f6f8;}
+header{background:#0B5D3B;color:white;padding:15px;text-align:center;}
+.search-box{padding:10px;background:white;text-align:center;}
+.search-box input{width:90%;padding:10px;font-size:16px;}
+.card{background:white;margin:10px;padding:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.name{color:#0B5D3B;font-weight:bold;font-size:18px;}
+.small{font-size:14px;color:#444;line-height:1.6;}
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>رابطہ آئمہ مساجد پنجاب</h1>
-    <p>مساجد اور آئمہ کا مستند ڈیٹا</p>
+<h2>رابطہ آئمہ مساجد پنجاب</h2>
+<p>Live Data System</p>
 </header>
 
 <div class="search-box">
-    <input type="text" id="search" onkeyup="searchData()" placeholder="امام، مسجد یا شہر تلاش کریں...">
+<input type="text" id="search" placeholder="تلاش کریں..." onkeyup="filter()">
 </div>
 
-<div class="container" id="list">
-
-    <div class="card">
-        <h3>امام: حافظ احمد</h3>
-        <div class="small">
-            مسجد: جامع مسجد فاروقیہ<br>
-            شہر: ڈیرہ غازی خان<br>
-            رابطہ: 0300-0000000
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>امام: قاری محمد علی</h3>
-        <div class="small">
-            مسجد: مسجد عثمانیہ<br>
-            شہر: ملتان<br>
-            رابطہ: 0311-1111111
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>امام: مفتی عبدالرحمن</h3>
-        <div class="small">
-            مسجد: جامع مسجد مدینہ<br>
-            شہر: لاہور<br>
-            رابطہ: 0322-2222222
-        </div>
-    </div>
-
-</div>
-
-<footer>
-    © 2026 رابطہ آئمہ مساجد پنجاب | تمام حقوق محفوظ ہیں
-</footer>
+<div id="data"></div>
 
 <script>
-function searchData(){
-    let input = document.getElementById('search').value.toLowerCase();
-    let cards = document.getElementsByClassName('card');
 
-    for(let i=0; i<cards.length; i++){
-        let text = cards[i].innerText.toLowerCase();
-        if(text.includes(input)){
-            cards[i].style.display = "";
-        } else {
-            cards[i].style.display = "none";
-        }
-    }
+let allData = [];
+
+// CSV export link (NO publish needed)
+const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
+
+fetch(sheetURL)
+.then(res => res.text())
+.then(text => {
+
+    let rows = text.split("\n").map(r => r.split(","));
+
+    rows.shift(); // header remove
+
+    allData = rows.map(r => ({
+        id: r[0],
+        name: r[1],
+        phone: r[2],
+        mosque: r[3],
+        tehsil: r[4],
+        district: r[5]
+    }));
+
+    show(allData);
+});
+
+function show(data){
+    let html = "";
+
+    data.forEach(i => {
+        html += `
+        <div class="card">
+            <div class="name">${i.name || ""}</div>
+            <div class="small">
+                مسجد: ${i.mosque || ""}<br>
+                تحصیل: ${i.tehsil || ""}<br>
+                ضلع: ${i.district || ""}<br>
+                رابطہ: ${i.phone || ""}
+            </div>
+        </div>
+        `;
+    });
+
+    document.getElementById("data").innerHTML = html;
 }
+
+function filter(){
+    let val = document.getElementById("search").value.toLowerCase();
+
+    let filtered = allData.filter(i =>
+        (i.name || "").toLowerCase().includes(val) ||
+        (i.mosque || "").toLowerCase().includes(val) ||
+        (i.district || "").toLowerCase().includes(val) ||
+        (i.tehsil || "").toLowerCase().includes(val)
+    );
+
+    show(filtered);
+}
+
 </script>
 
 </body>
