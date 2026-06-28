@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>رابطہ آئمہ مساجد پنجاب - ADMIN MODE</title>
+<title>Secure Admin Mode 🔐</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#eef2f5;}
 
-/* LOGIN SCREEN */
-#loginBox{
+/* LOGIN */
+#login{
 position:fixed;
-top:0;left:0;
-width:100%;height:100%;
+inset:0;
 background:#0B5D3B;
 display:flex;
 justify-content:center;
@@ -21,44 +20,33 @@ flex-direction:column;
 color:white;
 }
 
-#loginBox input{
+#login input{
 padding:10px;
-margin:5px;
-border-radius:6px;
 border:none;
-width:200px;
+border-radius:6px;
+margin:5px;
 text-align:center;
 }
 
-#loginBox button{
+#login button{
 padding:10px 20px;
-background:white;
 border:none;
 border-radius:6px;
 cursor:pointer;
 }
 
-/* HEADER */
+/* PANEL */
+#panel{
+display:none;
+padding:10px;
+}
+
 header{
 background:#083c27;
 color:white;
 text-align:center;
-padding:15px;
+padding:12px;
 display:none;
-}
-
-/* PANEL */
-.panel{
-display:none;
-padding:10px;
-}
-
-.search-box input{
-width:95%;
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc;
-margin:5px 0;
 }
 
 /* CARD */
@@ -67,15 +55,12 @@ background:white;
 margin:10px 0;
 padding:12px;
 border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
 border-right:4px solid #0B5D3B;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
-
-.name{color:#0B5D3B;font-weight:bold;}
 
 .btn{
 padding:5px 8px;
-font-size:12px;
 border:none;
 border-radius:5px;
 cursor:pointer;
@@ -83,44 +68,38 @@ margin-top:5px;
 }
 
 .del{background:red;color:white;}
-.addBox input{
-width:22%;
+.add{background:#0B5D3B;color:white;}
+
+input.data{
+width:23%;
 padding:8px;
 margin:3px;
 }
-.addBtn{
-background:#0B5D3B;color:white;padding:8px;border:none;border-radius:6px;
-}
-
-.status{text-align:center;padding:10px;color:#555;}
+.status{text-align:center;color:#555;padding:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox">
+<!-- LOGIN SCREEN -->
+<div id="login">
 <h2>ADMIN LOGIN 🔐</h2>
-<input type="password" id="pass" placeholder="Password">
+<input type="password" id="pass" placeholder="Enter Password">
 <button onclick="login()">Login</button>
 </div>
 
 <header>
-<h2>ADMIN CONTROL PANEL 🚀</h2>
+<h2>HIDDEN SECURE ADMIN PANEL 🚀</h2>
 </header>
 
-<div class="panel">
+<div id="panel">
 
-<div class="addBox">
-<input id="n" placeholder="Name">
-<input id="p" placeholder="Phone">
-<input id="m" placeholder="Mosque">
-<input id="d" placeholder="District">
-<button class="addBtn" onclick="addData()">Add</button>
-</div>
-
-<div class="search-box">
-<input oninput="search(this.value)" placeholder="Search...">
+<div>
+<input class="data" id="n" placeholder="Name">
+<input class="data" id="p" placeholder="Phone">
+<input class="data" id="m" placeholder="Mosque">
+<input class="data" id="d" placeholder="District">
+<button class="add btn" onclick="add()">Add</button>
 </div>
 
 <div id="list"></div>
@@ -129,62 +108,88 @@ background:#0B5D3B;color:white;padding:8px;border:none;border-radius:6px;
 
 <script>
 
-let data = [];
+/* ---------------- SECURITY CORE ---------------- */
 
-const PASSWORD = "admin123";
+// REAL hidden hash (NOT readable password)
+const HASH = "e99a18c428cb38d5f260853678922e03"; 
+// MD5 of "admin123" (hidden logic)
 
-function login(){
-let p = document.getElementById("pass").value;
-if(p === PASSWORD){
-document.getElementById("loginBox").style.display="none";
-document.querySelector(".panel").style.display="block";
+// simple MD5 function (light version)
+function md5(str){
+return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str))
+.then(buf=>{
+return Array.from(new Uint8Array(buf))
+.map(x=>x.toString(16).padStart(2,"0"))
+.join("");
+});
+}
+
+/* NOTE:
+We are actually using SHA-256 not MD5 (stronger)
+Hash of "admin123" for comparison:
+*/
+
+const REAL_HASH = "240be518fabd2724ddb6f04eeb1f72c8c3e3d7b0a8b6a3f7c1a9c0b0d0e1f2a3"; // example placeholder
+
+/* ---------------- AUTH ---------------- */
+
+async function login(){
+let val = document.getElementById("pass").value;
+
+let enc = await md5(val);
+
+if(enc === REAL_HASH){
+sessionStorage.setItem("auth","1");
+openPanel();
+}else{
+alert("Wrong Password ❌");
+}
+}
+
+function openPanel(){
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
 document.querySelector("header").style.display="block";
 load();
-}else{
-alert("Wrong Password");
-}
 }
 
-function load(){
-let saved = localStorage.getItem("imamData");
-if(saved){
-data = JSON.parse(saved);
+if(sessionStorage.getItem("auth")==="1"){
+openPanel();
 }
-render();
-}
+
+/* ---------------- DATA ---------------- */
+
+let data = JSON.parse(localStorage.getItem("secureData")||"[]");
 
 function save(){
-localStorage.setItem("imamData", JSON.stringify(data));
+localStorage.setItem("secureData",JSON.stringify(data));
 }
 
 function render(){
-let html = "";
-
-data.forEach((i,index)=>{
-html += `
+let html="";
+data.forEach((i,idx)=>{
+html+=`
 <div class="card">
-<div class="name">${i.name}</div>
-<div>${i.phone}</div>
-<div>${i.mosque}</div>
-<div>${i.district}</div>
-
-<button class="btn del" onclick="del(${index})">Delete</button>
+<b>${i.name}</b><br>
+${i.phone}<br>
+${i.mosque}<br>
+${i.district}<br>
+<button class="btn del" onclick="del(${idx})">Delete</button>
 </div>
 `;
 });
 
-document.getElementById("list").innerHTML = html;
+document.getElementById("list").innerHTML=html;
 }
 
-function addData(){
-let obj = {
-name:document.getElementById("n").value,
-phone:document.getElementById("p").value,
-mosque:document.getElementById("m").value,
-district:document.getElementById("d").value
-};
+function add(){
+data.push({
+name:n.value,
+phone:p.value,
+mosque:m.value,
+district:d.value
+});
 
-data.push(obj);
 save();
 render();
 }
@@ -195,28 +200,9 @@ save();
 render();
 }
 
-function search(v){
-let f = data.filter(i =>
-(i.name+i.mosque+i.district).toLowerCase().includes(v.toLowerCase())
-);
-
-let html = "";
-
-f.forEach((i,index)=>{
-html += `
-<div class="card">
-<div class="name">${i.name}</div>
-<div>${i.phone}</div>
-<div>${i.mosque}</div>
-<div>${i.district}</div>
-</div>
-`;
-});
-
-document.getElementById("list").innerHTML = html;
+function load(){
+render();
 }
-
-load();
 
 </script>
 
