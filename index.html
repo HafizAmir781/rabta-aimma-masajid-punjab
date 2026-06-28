@@ -3,206 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secure Admin Mode 🔐</title>
+<title>رابطہ آئمہ مساجد پنجاب - GOVERNMENT MODE</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#eef2f5;}
+header{background:#111;color:white;padding:15px;text-align:center;}
 
-/* LOGIN */
-#login{
+.login-box{
+display:none;
 position:fixed;
-inset:0;
-background:#0B5D3B;
-display:flex;
+top:0;left:0;right:0;bottom:0;
+background:#000000cc;
 justify-content:center;
 align-items:center;
-flex-direction:column;
-color:white;
 }
 
-#login input{
-padding:10px;
-border:none;
-border-radius:6px;
-margin:5px;
+.login-card{
+background:white;
+padding:20px;
+border-radius:10px;
+width:280px;
 text-align:center;
 }
 
-#login button{
-padding:10px 20px;
+input{
+width:90%;
+padding:10px;
+margin:5px;
+}
+
+button{
+padding:10px;
+background:#0B5D3B;
+color:white;
 border:none;
 border-radius:6px;
 cursor:pointer;
 }
 
-/* PANEL */
-#panel{
-display:none;
-padding:10px;
-}
-
-header{
-background:#083c27;
-color:white;
-text-align:center;
-padding:12px;
-display:none;
-}
-
-/* CARD */
 .card{
 background:white;
-margin:10px 0;
-padding:12px;
+margin:10px;
+padding:15px;
 border-radius:10px;
-border-right:4px solid #0B5D3B;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
-
-.btn{
-padding:5px 8px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-margin-top:5px;
-}
-
-.del{background:red;color:white;}
-.add{background:#0B5D3B;color:white;}
-
-input.data{
-width:23%;
-padding:8px;
-margin:3px;
-}
-.status{text-align:center;color:#555;padding:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login">
-<h2>ADMIN LOGIN 🔐</h2>
-<input type="password" id="pass" placeholder="Enter Password">
-<button onclick="login()">Login</button>
-</div>
-
 <header>
-<h2>HIDDEN SECURE ADMIN PANEL 🚀</h2>
+<h2>GOVERNMENT MODE SYSTEM</h2>
+<p>رابطہ آئمہ مساجد پنجاب</p>
+<button onclick="openLogin()">Admin Login</button>
 </header>
 
-<div id="panel">
-
-<div>
-<input class="data" id="n" placeholder="Name">
-<input class="data" id="p" placeholder="Phone">
-<input class="data" id="m" placeholder="Mosque">
-<input class="data" id="d" placeholder="District">
-<button class="add btn" onclick="add()">Add</button>
+<div class="login-box" id="loginBox">
+<div class="login-card">
+<h3>Admin Login</h3>
+<input type="password" id="pass" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
 </div>
 
-<div id="list"></div>
-
-</div>
+<div id="data"></div>
 
 <script>
 
-/* ---------------- SECURITY CORE ---------------- */
+let isAdmin = false;
+const ADMIN_PASS = "1234";
 
-// REAL hidden hash (NOT readable password)
-const HASH = "e99a18c428cb38d5f260853678922e03"; 
-// MD5 of "admin123" (hidden logic)
-
-// simple MD5 function (light version)
-function md5(str){
-return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str))
-.then(buf=>{
-return Array.from(new Uint8Array(buf))
-.map(x=>x.toString(16).padStart(2,"0"))
-.join("");
-});
+function openLogin(){
+document.getElementById("loginBox").style.display = "flex";
 }
 
-/* NOTE:
-We are actually using SHA-256 not MD5 (stronger)
-Hash of "admin123" for comparison:
-*/
+function login(){
+let p = document.getElementById("pass").value;
 
-const REAL_HASH = "240be518fabd2724ddb6f04eeb1f72c8c3e3d7b0a8b6a3f7c1a9c0b0d0e1f2a3"; // example placeholder
-
-/* ---------------- AUTH ---------------- */
-
-async function login(){
-let val = document.getElementById("pass").value;
-
-let enc = await md5(val);
-
-if(enc === REAL_HASH){
-sessionStorage.setItem("auth","1");
-openPanel();
+if(p === ADMIN_PASS){
+isAdmin = true;
+alert("Admin Access Granted");
+document.getElementById("loginBox").style.display = "none";
+loadData();
 }else{
-alert("Wrong Password ❌");
+alert("Wrong Password");
 }
 }
 
-function openPanel(){
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-document.querySelector("header").style.display="block";
-load();
-}
+// demo data (next step will connect Google Sheet DB engine)
+let data = [
+{name:"حافظ محمد عامر", mosque:"جامع مسجد", district:"ڈیرہ غازی خان", phone:"0333xxxxxxx"},
+{name:"قاری عثمان", mosque:"مسجد فاروقیہ", district:"گوجرہ", phone:"0300xxxxxxx"}
+];
 
-if(sessionStorage.getItem("auth")==="1"){
-openPanel();
-}
+function loadData(){
+let html = "";
 
-/* ---------------- DATA ---------------- */
-
-let data = JSON.parse(localStorage.getItem("secureData")||"[]");
-
-function save(){
-localStorage.setItem("secureData",JSON.stringify(data));
-}
-
-function render(){
-let html="";
-data.forEach((i,idx)=>{
-html+=`
+data.forEach(i=>{
+html += `
 <div class="card">
 <b>${i.name}</b><br>
-${i.phone}<br>
 ${i.mosque}<br>
 ${i.district}<br>
-<button class="btn del" onclick="del(${idx})">Delete</button>
+${i.phone}
 </div>
 `;
 });
 
-document.getElementById("list").innerHTML=html;
+document.getElementById("data").innerHTML = html;
 }
 
-function add(){
-data.push({
-name:n.value,
-phone:p.value,
-mosque:m.value,
-district:d.value
-});
-
-save();
-render();
-}
-
-function del(i){
-data.splice(i,1);
-save();
-render();
-}
-
-function load(){
-render();
-}
+loadData();
 
 </script>
 
