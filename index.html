@@ -3,18 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>رابطہ آئمہ مساجد پنجاب - ULTRA NEXT</title>
+<title>رابطہ آئمہ مساجد پنجاب - FULL EXTRA NEXT</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#eef2f5;}
+body{
+font-family:Arial;
+margin:0;
+background:#eef2f5;
+}
 
+/* HEADER */
 header{
-background:#0B5D3B;
+background:linear-gradient(90deg,#0B5D3B,#06402a);
 color:white;
 text-align:center;
 padding:15px;
 }
 
+/* SEARCH */
 .search-box{
 background:white;
 padding:10px;
@@ -27,14 +33,17 @@ padding:12px;
 border-radius:8px;
 border:1px solid #ccc;
 font-size:16px;
+outline:none;
 }
 
+/* CARD */
 .card{
 background:white;
 margin:10px;
 padding:15px;
 border-radius:12px;
 box-shadow:0 2px 6px rgba(0,0,0,0.1);
+border-right:5px solid #0B5D3B;
 }
 
 .name{
@@ -50,10 +59,11 @@ line-height:1.6;
 margin-top:5px;
 }
 
+/* BUTTONS */
 .btn{
 display:inline-block;
 margin-top:8px;
-padding:6px 10px;
+padding:7px 10px;
 border-radius:6px;
 font-size:12px;
 text-decoration:none;
@@ -63,6 +73,7 @@ color:white;
 .whatsapp{background:#25D366;}
 .call{background:#007bff;}
 
+/* PAGINATION */
 .pagination{
 text-align:center;
 padding:10px;
@@ -77,6 +88,18 @@ color:white;
 border-radius:6px;
 cursor:pointer;
 }
+
+/* STATUS */
+.status{
+text-align:center;
+padding:10px;
+font-size:14px;
+color:#555;
+}
+.highlight{
+background:yellow;
+padding:0 2px;
+}
 </style>
 </head>
 
@@ -84,12 +107,14 @@ cursor:pointer;
 
 <header>
 <h2>رابطہ آئمہ مساجد پنجاب</h2>
-<p>ULTRA NEXT System 🚀</p>
+<p>FULL EXTRA NEXT SYSTEM 🚀</p>
 </header>
 
 <div class="search-box">
 <input type="text" id="search" placeholder="تلاش کریں..." oninput="debounceSearch()">
 </div>
+
+<div class="status" id="status">Loading data...</div>
 
 <div id="data"></div>
 
@@ -106,6 +131,8 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCN
 
 async function loadData(){
 try{
+document.getElementById("status").innerText = "Loading data...";
+
 let res = await fetch(sheetURL);
 let text = await res.text();
 
@@ -121,10 +148,23 @@ district: r[5]
 }));
 
 filteredData = allData;
+
+document.getElementById("status").innerText =
+"Total Records: " + allData.length;
+
 render();
+
 }catch(e){
-setTimeout(loadData, 3000); // auto retry
+document.getElementById("status").innerText =
+"Error loading data... retrying";
+setTimeout(loadData, 3000);
 }
+}
+
+function highlight(text, term){
+if(!term) return text;
+return text.replaceAll(term,
+`<span class="highlight">${term}</span>`);
 }
 
 function render(){
@@ -134,6 +174,14 @@ let end = start + perPage;
 
 let pageData = filteredData.slice(start, end);
 
+if(pageData.length === 0){
+document.getElementById("data").innerHTML =
+"<div class='status'>No results found</div>";
+return;
+}
+
+let searchVal = document.getElementById("search").value.toLowerCase();
+
 let html = "";
 
 pageData.forEach(i => {
@@ -142,11 +190,12 @@ let wa = i.phone ? `https://wa.me/92${i.phone.replace(/^0/, "")}` : "#";
 
 html += `
 <div class="card">
-<div class="name">${i.name || ""}</div>
+<div class="name">${highlight(i.name || "", searchVal)}</div>
+
 <div class="small">
-مسجد: ${i.mosque || ""}<br>
-تحصیل: ${i.tehsil || ""}<br>
-ضلع: ${i.district || ""}<br>
+مسجد: ${highlight(i.mosque || "", searchVal)}<br>
+تحصیل: ${highlight(i.tehsil || "", searchVal)}<br>
+ضلع: ${highlight(i.district || "", searchVal)}<br>
 رابطہ: ${i.phone || ""}
 </div>
 
@@ -177,13 +226,14 @@ currentPage = p;
 render();
 }
 
-// Debounce Search (Ultra Smooth)
+// SMART DEBOUNCE SEARCH
 let timer;
 
 function debounceSearch(){
 clearTimeout(timer);
 
 timer = setTimeout(()=>{
+
 let val = document.getElementById("search").value.toLowerCase();
 
 filteredData = allData.filter(i =>
@@ -196,10 +246,9 @@ filteredData = allData.filter(i =>
 currentPage = 1;
 render();
 
-}, 300);
+}, 250);
 }
 
-// initial load
 loadData();
 
 </script>
