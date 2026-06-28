@@ -27,22 +27,21 @@ header{background:#0B5D3B;color:white;padding:15px;text-align:center;}
 <input type="text" id="search" placeholder="تلاش کریں..." onkeyup="filter()">
 </div>
 
-<div id="data"></div>
+<div id="data">لوڈ ہو رہا ہے...</div>
 
 <script>
 
 let allData = [];
 
-// CSV export link (NO publish needed)
 const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
 
 fetch(sheetURL)
 .then(res => res.text())
 .then(text => {
 
-    let rows = text.split("\n").map(r => r.split(","));
-
-    rows.shift(); // header remove
+    let rows = text.trim().split("\n").map(r => r.split(","));
+    rows.shift();
+    rows = rows.filter(r => r.length > 1);
 
     allData = rows.map(r => ({
         id: r[0],
