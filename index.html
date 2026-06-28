@@ -3,206 +3,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secure Admin Mode 🔐</title>
+<title>رابطہ آئمہ مساجد پنجاب - ULTRA NEXT</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#eef2f5;}
 
-/* LOGIN */
-#login{
-position:fixed;
-inset:0;
-background:#0B5D3B;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-color:white;
-}
-
-#login input{
-padding:10px;
-border:none;
-border-radius:6px;
-margin:5px;
-text-align:center;
-}
-
-#login button{
-padding:10px 20px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
-
-/* PANEL */
-#panel{
-display:none;
-padding:10px;
-}
-
 header{
-background:#083c27;
+background:#0B5D3B;
 color:white;
 text-align:center;
-padding:12px;
-display:none;
+padding:15px;
 }
 
-/* CARD */
+.search-box{
+background:white;
+padding:10px;
+text-align:center;
+}
+
+.search-box input{
+width:92%;
+padding:12px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:16px;
+}
+
 .card{
 background:white;
-margin:10px 0;
-padding:12px;
-border-radius:10px;
-border-right:4px solid #0B5D3B;
+margin:10px;
+padding:15px;
+border-radius:12px;
 box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-.btn{
-padding:5px 8px;
-border:none;
-border-radius:5px;
-cursor:pointer;
+.name{
+color:#0B5D3B;
+font-weight:bold;
+font-size:18px;
+}
+
+.small{
+font-size:14px;
+color:#444;
+line-height:1.6;
 margin-top:5px;
 }
 
-.del{background:red;color:white;}
-.add{background:#0B5D3B;color:white;}
-
-input.data{
-width:23%;
-padding:8px;
-margin:3px;
+.btn{
+display:inline-block;
+margin-top:8px;
+padding:6px 10px;
+border-radius:6px;
+font-size:12px;
+text-decoration:none;
+color:white;
 }
-.status{text-align:center;color:#555;padding:10px;}
+
+.whatsapp{background:#25D366;}
+.call{background:#007bff;}
+
+.pagination{
+text-align:center;
+padding:10px;
+}
+
+.pagination button{
+padding:6px 10px;
+margin:2px;
+border:none;
+background:#0B5D3B;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login">
-<h2>ADMIN LOGIN 🔐</h2>
-<input type="password" id="pass" placeholder="Enter Password">
-<button onclick="login()">Login</button>
-</div>
-
 <header>
-<h2>HIDDEN SECURE ADMIN PANEL 🚀</h2>
+<h2>رابطہ آئمہ مساجد پنجاب</h2>
+<p>ULTRA NEXT System 🚀</p>
 </header>
 
-<div id="panel">
-
-<div>
-<input class="data" id="n" placeholder="Name">
-<input class="data" id="p" placeholder="Phone">
-<input class="data" id="m" placeholder="Mosque">
-<input class="data" id="d" placeholder="District">
-<button class="add btn" onclick="add()">Add</button>
+<div class="search-box">
+<input type="text" id="search" placeholder="تلاش کریں..." oninput="debounceSearch()">
 </div>
 
-<div id="list"></div>
+<div id="data"></div>
 
-</div>
+<div class="pagination" id="pagination"></div>
 
 <script>
 
-/* ---------------- SECURITY CORE ---------------- */
+let allData = [];
+let filteredData = [];
+let currentPage = 1;
+let perPage = 10;
 
-// REAL hidden hash (NOT readable password)
-const HASH = "e99a18c428cb38d5f260853678922e03"; 
-// MD5 of "admin123" (hidden logic)
+const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
 
-// simple MD5 function (light version)
-function md5(str){
-return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str))
-.then(buf=>{
-return Array.from(new Uint8Array(buf))
-.map(x=>x.toString(16).padStart(2,"0"))
-.join("");
-});
+async function loadData(){
+try{
+let res = await fetch(sheetURL);
+let text = await res.text();
+
+let rows = text.trim().split("\n").map(r => r.split(","));
+rows.shift();
+
+allData = rows.map(r => ({
+name: r[1],
+phone: r[2],
+mosque: r[3],
+tehsil: r[4],
+district: r[5]
+}));
+
+filteredData = allData;
+render();
+}catch(e){
+setTimeout(loadData, 3000); // auto retry
 }
-
-/* NOTE:
-We are actually using SHA-256 not MD5 (stronger)
-Hash of "admin123" for comparison:
-*/
-
-const REAL_HASH = "240be518fabd2724ddb6f04eeb1f72c8c3e3d7b0a8b6a3f7c1a9c0b0d0e1f2a3"; // example placeholder
-
-/* ---------------- AUTH ---------------- */
-
-async function login(){
-let val = document.getElementById("pass").value;
-
-let enc = await md5(val);
-
-if(enc === REAL_HASH){
-sessionStorage.setItem("auth","1");
-openPanel();
-}else{
-alert("Wrong Password ❌");
-}
-}
-
-function openPanel(){
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-document.querySelector("header").style.display="block";
-load();
-}
-
-if(sessionStorage.getItem("auth")==="1"){
-openPanel();
-}
-
-/* ---------------- DATA ---------------- */
-
-let data = JSON.parse(localStorage.getItem("secureData")||"[]");
-
-function save(){
-localStorage.setItem("secureData",JSON.stringify(data));
 }
 
 function render(){
-let html="";
-data.forEach((i,idx)=>{
-html+=`
+
+let start = (currentPage-1)*perPage;
+let end = start + perPage;
+
+let pageData = filteredData.slice(start, end);
+
+let html = "";
+
+pageData.forEach(i => {
+
+let wa = i.phone ? `https://wa.me/92${i.phone.replace(/^0/, "")}` : "#";
+
+html += `
 <div class="card">
-<b>${i.name}</b><br>
-${i.phone}<br>
-${i.mosque}<br>
-${i.district}<br>
-<button class="btn del" onclick="del(${idx})">Delete</button>
+<div class="name">${i.name || ""}</div>
+<div class="small">
+مسجد: ${i.mosque || ""}<br>
+تحصیل: ${i.tehsil || ""}<br>
+ضلع: ${i.district || ""}<br>
+رابطہ: ${i.phone || ""}
+</div>
+
+<a class="btn whatsapp" href="${wa}" target="_blank">WhatsApp</a>
+<a class="btn call" href="tel:${i.phone || ''}">Call</a>
 </div>
 `;
 });
 
-document.getElementById("list").innerHTML=html;
+document.getElementById("data").innerHTML = html;
+renderPagination();
 }
 
-function add(){
-data.push({
-name:n.value,
-phone:p.value,
-mosque:m.value,
-district:d.value
-});
+function renderPagination(){
 
-save();
+let pages = Math.ceil(filteredData.length / perPage);
+let html = "";
+
+for(let i=1;i<=pages;i++){
+html += `<button onclick="goPage(${i})">${i}</button>`;
+}
+
+document.getElementById("pagination").innerHTML = html;
+}
+
+function goPage(p){
+currentPage = p;
 render();
 }
 
-function del(i){
-data.splice(i,1);
-save();
+// Debounce Search (Ultra Smooth)
+let timer;
+
+function debounceSearch(){
+clearTimeout(timer);
+
+timer = setTimeout(()=>{
+let val = document.getElementById("search").value.toLowerCase();
+
+filteredData = allData.filter(i =>
+(i.name || "").toLowerCase().includes(val) ||
+(i.mosque || "").toLowerCase().includes(val) ||
+(i.district || "").toLowerCase().includes(val) ||
+(i.tehsil || "").toLowerCase().includes(val)
+);
+
+currentPage = 1;
 render();
+
+}, 300);
 }
 
-function load(){
-render();
-}
+// initial load
+loadData();
 
 </script>
 
