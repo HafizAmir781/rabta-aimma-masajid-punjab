@@ -3,38 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>رابطہ آئمہ مساجد پنجاب - PRO MAX</title>
+<title>رابطہ آئمہ مساجد پنجاب - ULTRA NEXT</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#eef2f5;}
-header{background:#0B5D3B;color:white;padding:15px;text-align:center;}
 
-.search-box{padding:10px;background:white;text-align:center;}
-.search-box input{
-width:90%;
-padding:12px;
-font-size:16px;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-.filters{
-display:flex;
-flex-wrap:wrap;
-gap:5px;
-justify-content:center;
-padding:10px;
-background:#fff;
-}
-
-.filters button{
-padding:6px 10px;
-border:none;
-border-radius:6px;
+header{
 background:#0B5D3B;
 color:white;
-font-size:12px;
-cursor:pointer;
+text-align:center;
+padding:15px;
+}
+
+.search-box{
+background:white;
+padding:10px;
+text-align:center;
+}
+
+.search-box input{
+width:92%;
+padding:12px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:16px;
 }
 
 .card{
@@ -58,14 +50,9 @@ line-height:1.6;
 margin-top:5px;
 }
 
-.btns{
-margin-top:10px;
-display:flex;
-gap:5px;
-flex-wrap:wrap;
-}
-
 .btn{
+display:inline-block;
+margin-top:8px;
 padding:6px 10px;
 border-radius:6px;
 font-size:12px;
@@ -75,10 +62,21 @@ color:white;
 
 .whatsapp{background:#25D366;}
 .call{background:#007bff;}
-.copy{background:#555;}
 
-#loading{text-align:center;padding:10px;color:#666;}
-#notfound{text-align:center;padding:15px;color:red;display:none;}
+.pagination{
+text-align:center;
+padding:10px;
+}
+
+.pagination button{
+padding:6px 10px;
+margin:2px;
+border:none;
+background:#0B5D3B;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
 </style>
 </head>
 
@@ -86,63 +84,59 @@ color:white;
 
 <header>
 <h2>رابطہ آئمہ مساجد پنجاب</h2>
-<p>PRO MAX Live System</p>
+<p>ULTRA NEXT System 🚀</p>
 </header>
 
 <div class="search-box">
-<input type="text" id="search" placeholder="تلاش کریں..." onkeyup="smartSearch()">
+<input type="text" id="search" placeholder="تلاش کریں..." oninput="debounceSearch()">
 </div>
 
-<div class="filters">
-<button onclick="filterDistrict('')">All</button>
-<button onclick="filterDistrict('ڈیرہ غازی خان')">DG Khan</button>
-<button onclick="filterDistrict('ٹوبہ ٹیک سنگھ')">Toba</button>
-<button onclick="filterDistrict('گوجرہ')">Gojra</button>
-</div>
-
-<div id="loading">لوڈ ہو رہا ہے...</div>
-<div id="notfound">کوئی نتیجہ نہیں ملا</div>
 <div id="data"></div>
+
+<div class="pagination" id="pagination"></div>
 
 <script>
 
 let allData = [];
-let currentFilter = "";
+let filteredData = [];
+let currentPage = 1;
+let perPage = 10;
 
 const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
 
-fetch(sheetURL)
-.then(res => res.text())
-.then(text => {
+async function loadData(){
+try{
+let res = await fetch(sheetURL);
+let text = await res.text();
 
-    let rows = text.trim().split("\n").map(r => r.split(","));
-    rows.shift();
+let rows = text.trim().split("\n").map(r => r.split(","));
+rows.shift();
 
-    allData = rows.map(r => ({
-        name: r[1],
-        phone: r[2],
-        mosque: r[3],
-        tehsil: r[4],
-        district: r[5]
-    }));
+allData = rows.map(r => ({
+name: r[1],
+phone: r[2],
+mosque: r[3],
+tehsil: r[4],
+district: r[5]
+}));
 
-    document.getElementById("loading").style.display = "none";
-    showData(allData);
-});
+filteredData = allData;
+render();
+}catch(e){
+setTimeout(loadData, 3000); // auto retry
+}
+}
 
-function showData(data){
+function render(){
+
+let start = (currentPage-1)*perPage;
+let end = start + perPage;
+
+let pageData = filteredData.slice(start, end);
 
 let html = "";
 
-if(data.length === 0){
-document.getElementById("notfound").style.display = "block";
-document.getElementById("data").innerHTML = "";
-return;
-}else{
-document.getElementById("notfound").style.display = "none";
-}
-
-data.forEach(i => {
+pageData.forEach(i => {
 
 let wa = i.phone ? `https://wa.me/92${i.phone.replace(/^0/, "")}` : "#";
 
@@ -156,45 +150,57 @@ html += `
 رابطہ: ${i.phone || ""}
 </div>
 
-<div class="btns">
 <a class="btn whatsapp" href="${wa}" target="_blank">WhatsApp</a>
 <a class="btn call" href="tel:${i.phone || ''}">Call</a>
-<a class="btn copy" onclick="navigator.clipboard.writeText('${i.phone || ''}')">Copy</a>
-</div>
-
 </div>
 `;
 });
 
 document.getElementById("data").innerHTML = html;
+renderPagination();
 }
 
-function smartSearch(){
+function renderPagination(){
 
+let pages = Math.ceil(filteredData.length / perPage);
+let html = "";
+
+for(let i=1;i<=pages;i++){
+html += `<button onclick="goPage(${i})">${i}</button>`;
+}
+
+document.getElementById("pagination").innerHTML = html;
+}
+
+function goPage(p){
+currentPage = p;
+render();
+}
+
+// Debounce Search (Ultra Smooth)
+let timer;
+
+function debounceSearch(){
+clearTimeout(timer);
+
+timer = setTimeout(()=>{
 let val = document.getElementById("search").value.toLowerCase();
 
-let filtered = allData.filter(i =>
+filteredData = allData.filter(i =>
 (i.name || "").toLowerCase().includes(val) ||
 (i.mosque || "").toLowerCase().includes(val) ||
 (i.district || "").toLowerCase().includes(val) ||
 (i.tehsil || "").toLowerCase().includes(val)
 );
 
-if(currentFilter){
-filtered = filtered.filter(i => i.district === currentFilter);
+currentPage = 1;
+render();
+
+}, 300);
 }
 
-showData(filtered);
-}
-
-function filterDistrict(d){
-
-currentFilter = d;
-
-let filtered = d ? allData.filter(i => i.district === d) : allData;
-
-showData(filtered);
-}
+// initial load
+loadData();
 
 </script>
 
