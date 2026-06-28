@@ -8,11 +8,30 @@
 <style>
 body{font-family:Arial;margin:0;background:#f4f6f8;}
 header{background:#0B5D3B;color:white;padding:15px;text-align:center;}
+
 .search-box{padding:10px;background:white;text-align:center;}
-.search-box input{width:90%;padding:10px;font-size:16px;}
+.search-box input{width:90%;padding:10px;font-size:16px;border:1px solid #ccc;border-radius:8px;}
+
 .card{background:white;margin:10px;padding:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
 .name{color:#0B5D3B;font-weight:bold;font-size:18px;}
 .small{font-size:14px;color:#444;line-height:1.6;}
+
+.btn{
+display:inline-block;
+margin-top:8px;
+padding:8px 12px;
+background:#25D366;
+color:white;
+text-decoration:none;
+border-radius:6px;
+font-size:14px;
+}
+
+#loading{
+text-align:center;
+padding:15px;
+color:#666;
+}
 </style>
 </head>
 
@@ -20,14 +39,15 @@ header{background:#0B5D3B;color:white;padding:15px;text-align:center;}
 
 <header>
 <h2>رابطہ آئمہ مساجد پنجاب</h2>
-<p>Live Data System</p>
+<p>Live Data System (Pro Upgrade)</p>
 </header>
 
 <div class="search-box">
-<input type="text" id="search" placeholder="تلاش کریں..." onkeyup="filter()">
+<input type="text" id="search" placeholder="تلاش کریں..." onkeyup="filterData()">
 </div>
 
-<div id="data">لوڈ ہو رہا ہے...</div>
+<div id="loading">لوڈ ہو رہا ہے...</div>
+<div id="data"></div>
 
 <script>
 
@@ -35,16 +55,18 @@ let allData = [];
 
 const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
 
+function fetchData(){
+
+document.getElementById("loading").style.display = "block";
+
 fetch(sheetURL)
 .then(res => res.text())
 .then(text => {
 
     let rows = text.trim().split("\n").map(r => r.split(","));
     rows.shift();
-    rows = rows.filter(r => r.length > 1);
 
     allData = rows.map(r => ({
-        id: r[0],
         name: r[1],
         phone: r[2],
         mosque: r[3],
@@ -52,41 +74,58 @@ fetch(sheetURL)
         district: r[5]
     }));
 
-    show(allData);
+    showData(allData);
+
+    document.getElementById("loading").style.display = "none";
+});
+}
+
+function showData(data){
+
+let html = "";
+
+data.forEach(i => {
+
+let whatsapp = i.phone ? `https://wa.me/92${i.phone.replace(/^0/, "")}` : "#";
+
+html += `
+<div class="card">
+<div class="name">${i.name || ""}</div>
+<div class="small">
+مسجد: ${i.mosque || ""}<br>
+تحصیل: ${i.tehsil || ""}<br>
+ضلع: ${i.district || ""}<br>
+رابطہ: ${i.phone || ""}
+</div>
+
+<a class="btn" href="${whatsapp}" target="_blank">WhatsApp کریں</a>
+
+</div>
+`;
 });
 
-function show(data){
-    let html = "";
-
-    data.forEach(i => {
-        html += `
-        <div class="card">
-            <div class="name">${i.name || ""}</div>
-            <div class="small">
-                مسجد: ${i.mosque || ""}<br>
-                تحصیل: ${i.tehsil || ""}<br>
-                ضلع: ${i.district || ""}<br>
-                رابطہ: ${i.phone || ""}
-            </div>
-        </div>
-        `;
-    });
-
-    document.getElementById("data").innerHTML = html;
+document.getElementById("data").innerHTML = html;
 }
 
-function filter(){
-    let val = document.getElementById("search").value.toLowerCase();
+function filterData(){
 
-    let filtered = allData.filter(i =>
-        (i.name || "").toLowerCase().includes(val) ||
-        (i.mosque || "").toLowerCase().includes(val) ||
-        (i.district || "").toLowerCase().includes(val) ||
-        (i.tehsil || "").toLowerCase().includes(val)
-    );
+let val = document.getElementById("search").value.toLowerCase();
 
-    show(filtered);
+let filtered = allData.filter(i =>
+(i.name || "").toLowerCase().includes(val) ||
+(i.mosque || "").toLowerCase().includes(val) ||
+(i.district || "").toLowerCase().includes(val) ||
+(i.tehsil || "").toLowerCase().includes(val)
+);
+
+showData(filtered);
 }
+
+// initial load
+fetchData();
+
+// auto refresh every 60 sec
+setInterval(fetchData, 60000);
 
 </script>
 
