@@ -3,35 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>رابطہ آئمہ مساجد پنجاب</title>
+<title>رابطہ آئمہ مساجد پنجاب - PRO MAX</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f4f6f8;}
+body{font-family:Arial;margin:0;background:#eef2f5;}
 header{background:#0B5D3B;color:white;padding:15px;text-align:center;}
 
 .search-box{padding:10px;background:white;text-align:center;}
-.search-box input{width:90%;padding:10px;font-size:16px;border:1px solid #ccc;border-radius:8px;}
+.search-box input{
+width:90%;
+padding:12px;
+font-size:16px;
+border-radius:8px;
+border:1px solid #ccc;
+}
 
-.card{background:white;margin:10px;padding:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-.name{color:#0B5D3B;font-weight:bold;font-size:18px;}
-.small{font-size:14px;color:#444;line-height:1.6;}
+.filters{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+justify-content:center;
+padding:10px;
+background:#fff;
+}
+
+.filters button{
+padding:6px 10px;
+border:none;
+border-radius:6px;
+background:#0B5D3B;
+color:white;
+font-size:12px;
+cursor:pointer;
+}
+
+.card{
+background:white;
+margin:10px;
+padding:15px;
+border-radius:12px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.name{
+color:#0B5D3B;
+font-weight:bold;
+font-size:18px;
+}
+
+.small{
+font-size:14px;
+color:#444;
+line-height:1.6;
+margin-top:5px;
+}
+
+.btns{
+margin-top:10px;
+display:flex;
+gap:5px;
+flex-wrap:wrap;
+}
 
 .btn{
-display:inline-block;
-margin-top:8px;
-padding:8px 12px;
-background:#25D366;
-color:white;
-text-decoration:none;
+padding:6px 10px;
 border-radius:6px;
-font-size:14px;
+font-size:12px;
+text-decoration:none;
+color:white;
 }
 
-#loading{
-text-align:center;
-padding:15px;
-color:#666;
-}
+.whatsapp{background:#25D366;}
+.call{background:#007bff;}
+.copy{background:#555;}
+
+#loading{text-align:center;padding:10px;color:#666;}
+#notfound{text-align:center;padding:15px;color:red;display:none;}
 </style>
 </head>
 
@@ -39,25 +86,30 @@ color:#666;
 
 <header>
 <h2>رابطہ آئمہ مساجد پنجاب</h2>
-<p>Live Data System (Pro Upgrade)</p>
+<p>PRO MAX Live System</p>
 </header>
 
 <div class="search-box">
-<input type="text" id="search" placeholder="تلاش کریں..." onkeyup="filterData()">
+<input type="text" id="search" placeholder="تلاش کریں..." onkeyup="smartSearch()">
+</div>
+
+<div class="filters">
+<button onclick="filterDistrict('')">All</button>
+<button onclick="filterDistrict('ڈیرہ غازی خان')">DG Khan</button>
+<button onclick="filterDistrict('ٹوبہ ٹیک سنگھ')">Toba</button>
+<button onclick="filterDistrict('گوجرہ')">Gojra</button>
 </div>
 
 <div id="loading">لوڈ ہو رہا ہے...</div>
+<div id="notfound">کوئی نتیجہ نہیں ملا</div>
 <div id="data"></div>
 
 <script>
 
 let allData = [];
+let currentFilter = "";
 
 const sheetURL = "https://docs.google.com/spreadsheets/d/1smpwvDyoyVkeFUcFTr8yCNrDHyZuXAxYy5uirBgCTQU/export?format=csv";
-
-function fetchData(){
-
-document.getElementById("loading").style.display = "block";
 
 fetch(sheetURL)
 .then(res => res.text())
@@ -74,19 +126,25 @@ fetch(sheetURL)
         district: r[5]
     }));
 
-    showData(allData);
-
     document.getElementById("loading").style.display = "none";
+    showData(allData);
 });
-}
 
 function showData(data){
 
 let html = "";
 
+if(data.length === 0){
+document.getElementById("notfound").style.display = "block";
+document.getElementById("data").innerHTML = "";
+return;
+}else{
+document.getElementById("notfound").style.display = "none";
+}
+
 data.forEach(i => {
 
-let whatsapp = i.phone ? `https://wa.me/92${i.phone.replace(/^0/, "")}` : "#";
+let wa = i.phone ? `https://wa.me/92${i.phone.replace(/^0/, "")}` : "#";
 
 html += `
 <div class="card">
@@ -98,7 +156,11 @@ html += `
 رابطہ: ${i.phone || ""}
 </div>
 
-<a class="btn" href="${whatsapp}" target="_blank">WhatsApp کریں</a>
+<div class="btns">
+<a class="btn whatsapp" href="${wa}" target="_blank">WhatsApp</a>
+<a class="btn call" href="tel:${i.phone || ''}">Call</a>
+<a class="btn copy" onclick="navigator.clipboard.writeText('${i.phone || ''}')">Copy</a>
+</div>
 
 </div>
 `;
@@ -107,7 +169,7 @@ html += `
 document.getElementById("data").innerHTML = html;
 }
 
-function filterData(){
+function smartSearch(){
 
 let val = document.getElementById("search").value.toLowerCase();
 
@@ -118,14 +180,21 @@ let filtered = allData.filter(i =>
 (i.tehsil || "").toLowerCase().includes(val)
 );
 
+if(currentFilter){
+filtered = filtered.filter(i => i.district === currentFilter);
+}
+
 showData(filtered);
 }
 
-// initial load
-fetchData();
+function filterDistrict(d){
 
-// auto refresh every 60 sec
-setInterval(fetchData, 60000);
+currentFilter = d;
+
+let filtered = d ? allData.filter(i => i.district === d) : allData;
+
+showData(filtered);
+}
 
 </script>
 
